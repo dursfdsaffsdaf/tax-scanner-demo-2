@@ -1,1 +1,119 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #111827;
+  color: #f3f4f6;
+  margin: 0;
+  padding: 0;
+}
 
+header {
+  padding: 20px;
+  border-bottom: 1px solid #374151;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.toolbar {
+  padding: 16px 20px;
+  border-bottom: 1px solid #374151;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filters button,
+.view-toggle button {
+  background: #1f2937;
+  color: white;
+  border: 1px solid #374151;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.filters button.active,
+.view-toggle button.active {
+  background: #2563eb;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  border-bottom: 1px solid #374151;
+}
+
+main {
+  padding: 20px;
+}
+
+.section-title {
+  margin-top: 40px;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-left: 5px solid #2563eb;
+  padding: 16px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+}
+
+.card.urgent {
+  border-left-color: #dc2626;
+}
+
+.card.imminent {
+  border-left-color: #f59e0b;
+}
+
+.card.scheduled {
+  border-left-color: #16a34a;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.date {
+  color: #9ca3af;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.priority {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.news-link {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.news-link:hover {
+  text-decoration: underline;
+}
+
+.country-group {
+  margin-bottom: 40px;
+}
