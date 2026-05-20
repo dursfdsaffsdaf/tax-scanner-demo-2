@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tax Intel</title>
+</head>
+<body>
+  <h1>Tax Intel is Live</h1>
+  <p>Your deployment works.</p>
+
+  <button onclick="loadData()">Load Tax Data</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function loadData() {
+      const res = await fetch('/api/tax-intel');
+      const data = await res.json();
+      document.getElementById('output').textContent =
+        JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
