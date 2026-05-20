@@ -3,40 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="description" content="Razer Group — Multinational Tax Operations Console" />
   <title>Tax Intel Console</title>
-
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-  <header>
-    <h1>Tax Intel Console</h1>
+  <header id="header">
+    <div id="header-left">
+      <span class="status-dot busy" id="status-dot" aria-hidden="true"></span>
+      <h1>▸ TAX INTEL</h1>
+      <span id="last-updated" aria-live="polite"></span>
+    </div>
+    <div id="header-right">
+      <span id="alert-badge" role="alert">
+        ⚠ <span id="alert-count"></span>
+      </span>
+      <input type="search" id="search-bar" placeholder="Search…"
+        aria-label="Search deadlines and intelligence" autocomplete="off" />
+      <button class="export-btn" id="export-btn" title="Export current view to CSV">↓ CSV</button>
+    </div>
   </header>
 
-  <!-- Jurisdiction Filter -->
-  <div class="toolbar">
-    <div id="jurisdictionFilters" class="filters"></div>
+  <div id="toolbar" role="toolbar" aria-label="Filters">
+    <nav class="j-filters" id="jurisdictionFilters" aria-label="Jurisdiction filter"></nav>
+    <div id="timeWindowFilter" role="group" aria-label="Time window"></div>
+    <div class="view-toggle" id="viewToggle" role="group" aria-label="View"></div>
   </div>
 
-  <!-- View Toggle -->
-  <div class="view-toggle">
-    <button id="actionBtn" class="active">
-      ACTION BOARD
-    </button>
+  <div id="stale-banner" role="alert"></div>
 
-    <button id="intelBtn">
-      INTELLIGENCE FEED
-    </button>
-  </div>
+  <div id="stats-bar" aria-live="polite"></div>
+  <div id="meta-bar" aria-live="polite"></div>
 
-  <!-- Main Content -->
-  <main id="content">
-    Loading...
+  <main id="content" aria-live="polite">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Connecting to intelligence backend…</p>
+    </div>
   </main>
 
-  <script src="script.js"></script>
+  <footer id="footer-bar">
+    <span id="shortcuts-hint">
+      <kbd>1</kbd> Action Board &nbsp;
+      <kbd>2</kbd> Intel Feed &nbsp;
+      <kbd>7</kbd> 7-Day window &nbsp;
+      <kbd>3</kbd> 30-Day window &nbsp;
+      <kbd>0</kbd> All jurisdictions &nbsp;
+      <kbd>/</kbd> Search
+    </span>
+  </footer>
 
+  <script src="script.js"></script>
 </body>
 </html>
