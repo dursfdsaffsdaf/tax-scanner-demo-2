@@ -1,35 +1,42 @@
-<button onclick="loadData()">Load Tax Data</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<div id="news"></div>
-<div id="deadlines"></div>
+  <title>Tax Intel Console</title>
 
-<script>
-async function loadData() {
-  const res = await fetch("/api/tax-intel");
-  const data = await res.json();
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-  // NEWS
-  document.getElementById("news").innerHTML =
-    "<h2>Tax News</h2>" +
-    data.news.map(item => `
-      <div style="border:1px solid #ccc;padding:10px;margin:10px;">
-        <h3>${item.title}</h3>
-        <p><b>${item.jurisdiction}</b> • ${item.date}</p>
-        <p>${item.summary}</p>
-        <a href="${item.url}" target="_blank">Read More</a>
-      </div>
-    `).join("");
+<body>
 
-  // DEADLINES
-  document.getElementById("deadlines").innerHTML =
-    "<h2>Deadlines</h2>" +
-    data.deadlines.map(item => `
-      <div style="border:1px solid red;padding:10px;margin:10px;">
-        <h3>${item.description}</h3>
-        <p><b>${item.jurisdiction}</b></p>
-        <p>Deadline: ${item.deadline}</p>
-        <p>${item.notes}</p>
-      </div>
-    `).join("");
-}
-</script>
+  <header>
+    <h1>Tax Intel Console</h1>
+  </header>
+
+  <!-- Jurisdiction Filter -->
+  <div class="toolbar">
+    <div id="jurisdictionFilters" class="filters"></div>
+  </div>
+
+  <!-- View Toggle -->
+  <div class="view-toggle">
+    <button id="actionBtn" class="active">
+      ACTION BOARD
+    </button>
+
+    <button id="intelBtn">
+      INTELLIGENCE FEED
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <main id="content">
+    Loading...
+  </main>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
