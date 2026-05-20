@@ -1,23 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Tax Intel</title>
-</head>
-<body>
-  <h1>Tax Intel is Live</h1>
-  <p>Your deployment works.</p>
+<button onclick="loadData()">Load Tax Data</button>
 
-  <button onclick="loadData()">Load Tax Data</button>
+<div id="news"></div>
+<div id="deadlines"></div>
 
-  <pre id="output"></pre>
+<script>
+async function loadData() {
+  const res = await fetch("/api/tax-intel");
+  const data = await res.json();
 
-  <script>
-    async function loadData() {
-      const res = await fetch('/api/tax-intel');
-      const data = await res.json();
-      document.getElementById('output').textContent =
-        JSON.stringify(data, null, 2);
-    }
-  </script>
-</body>
-</html>
+  // NEWS
+  document.getElementById("news").innerHTML =
+    "<h2>Tax News</h2>" +
+    data.news.map(item => `
+      <div style="border:1px solid #ccc;padding:10px;margin:10px;">
+        <h3>${item.title}</h3>
+        <p><b>${item.jurisdiction}</b> • ${item.date}</p>
+        <p>${item.summary}</p>
+        <a href="${item.url}" target="_blank">Read More</a>
+      </div>
+    `).join("");
+
+  // DEADLINES
+  document.getElementById("deadlines").innerHTML =
+    "<h2>Deadlines</h2>" +
+    data.deadlines.map(item => `
+      <div style="border:1px solid red;padding:10px;margin:10px;">
+        <h3>${item.description}</h3>
+        <p><b>${item.jurisdiction}</b></p>
+        <p>Deadline: ${item.deadline}</p>
+        <p>${item.notes}</p>
+      </div>
+    `).join("");
+}
+</script>
