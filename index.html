@@ -3,97 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tax Control</title>
-
-  <style>
-    body {
-      background: #0d1117;
-      color: #e6edf3;
-      font-family: system-ui, sans-serif;
-      margin: 0;
-    }
-
-    header {
-      background: #161b22;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid #30363d;
-    }
-
-    h1 {
-      font-size: 13px;
-      letter-spacing: 1px;
-    }
-
-    #controls {
-      padding: 12px 16px;
-      border-bottom: 1px solid #30363d;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      font-size: 12px;
-    }
-
-    select, input {
-      background: #161b22;
-      color: #e6edf3;
-      border: 1px solid #30363d;
-      padding: 4px 6px;
-    }
-
-    section {
-      padding: 16px;
-      border-bottom: 1px solid #30363d;
-    }
-
-    .card {
-      background: #161b22;
-      border-left: 3px solid #30363d;
-      padding: 10px;
-      margin-bottom: 8px;
-    }
-
-    .high { border-left-color: #f85149; }
-    .medium { border-left-color: #d29922; }
-
-    .meta {
-      font-size: 11px;
-      color: #8b949e;
-      margin-top: 4px;
-    }
-  </style>
+  <meta name="description" content="Razer Group — Multinational Tax Operations Console" />
+  <title>Tax Intel Console</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-<header>
-  <h1>TAX CONTROL</h1>
-  <input id="search" placeholder="Search…" />
-</header>
+  <header id="header">
+    <div id="header-left">
+      <span class="status-dot busy" id="status-dot" aria-hidden="true"></span>
+      <h1>▸ TAX INTEL</h1>
+      <span id="last-updated" aria-live="polite"></span>
+    </div>
+    <div id="header-right">
+      <span id="alert-badge" role="alert">
+        ⚠ <span id="alert-count"></span>
+      </span>
+      <input type="search" id="search-bar" placeholder="Search…"
+        aria-label="Search deadlines and intelligence" autocomplete="off" />
+      <button class="export-btn" id="export-btn" title="Export current view to CSV">↓ CSV</button>
+    </div>
+  </header>
 
-<!-- CONTROLS -->
-<div id="controls"></div>
+  <div id="toolbar" role="toolbar" aria-label="Filters">
+    <nav class="j-filters" id="jurisdictionFilters" aria-label="Jurisdiction filter"></nav>
+    <div id="timeWindowFilter" role="group" aria-label="Time window"></div>
+    <div class="view-toggle" id="viewToggle" role="group" aria-label="View"></div>
+  </div>
 
-<!-- TODAY ACTIONS -->
-<section>
-  <h2>Today</h2>
-  <div id="today"></div>
-</section>
+  <div id="stale-banner" role="alert"></div>
 
-<!-- DEADLINES -->
-<section>
-  <h2>Deadlines</h2>
-  <div id="deadlines"></div>
-</section>
+  <div id="stats-bar" aria-live="polite"></div>
+  <div id="meta-bar" aria-live="polite"></div>
 
-<!-- INTEL -->
-<section>
-  <h2>Intel</h2>
-  <div id="intel"></div>
-</section>
+  <main id="content" aria-live="polite">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Connecting to intelligence backend…</p>
+    </div>
+  </main>
 
-<script src="script.js"></script>
+  <footer id="footer-bar">
+    <span id="shortcuts-hint">
+      <kbd>1</kbd> Action Board &nbsp;
+      <kbd>2</kbd> Intel Feed &nbsp;
+      <kbd>7</kbd> 7-Day window &nbsp;
+      <kbd>3</kbd> 30-Day window &nbsp;
+      <kbd>0</kbd> All jurisdictions &nbsp;
+      <kbd>/</kbd> Search
+    </span>
+  </footer>
 
+  <script src="script.js"></script>
 </body>
 </html>
