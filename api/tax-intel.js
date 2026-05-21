@@ -1,74 +1,40 @@
 "use strict";
 
-/*
-REBUILT BACKEND
-
-- Entity-scoped deadlines (not jurisdiction)
-- Applicability filtering
-- Business day adjustment
-- Intel → impact → entity mapping
-- Action generation
-*/
-
 const { XMLParser } = require("fast-xml-parser");
-
 const parser = new XMLParser();
 
-/* ─────────────────────────────────────────────
-   ENTITY MODEL (SOURCE OF TRUTH)
-───────────────────────────────────────────── */
-
+/* ─────────────────────────────
+   ENTITIES
+───────────────────────────── */
 const ENTITIES = [
-  {
-    id: "ROPL-MY",
-    jurisdiction: "MY",
-    taxes: { SST: true, CIT: true, WHT: true },
-    sst_frequency: "bimonthly",
-    fy_end_month: 12,
-    owner: "MY"
-  },
-  {
-    id: "RGJKK-JP",
-    jurisdiction: "JP",
-    taxes: { CIT: true },
-    fy_end_month: 3,
-    owner: "JP"
-  }
+  { id: "ROPL-MY", jurisdiction: "MY", taxes: ["SST","CIT"], owner: "MY" },
+  { id: "RGJKK-JP", jurisdiction: "JP", taxes: ["CIT"], owner: "JP" }
 ];
 
-/* ─────────────────────────────────────────────
+/* ─────────────────────────────
    DEADLINES
-───────────────────────────────────────────── */
-
-function isBusinessDay(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  return day !== 0 && day !== 6;
-}
+───────────────────────────── */
 
 function adjust(date) {
   let d = new Date(date);
-  while (!isBusinessDay(d)) {
-    d.setDate(d.getDate() + 1);
+  while ([0,6].includes(d.getDay())) {
+    d.setDate(d.getDate()+1);
   }
-  return d.toISOString().slice(0, 10);
+  return d.toISOString().slice(0,10);
 }
 
-function genDeadlines(now = new Date()) {
-  const out = [];
+function genDeadlines(now=new Date()) {
   const y = now.getFullYear();
-  const m = now.getMonth() + 1;
+  const m = String(now.getMonth()+1).padStart(2,"0");
 
-  ENTITIES.forEach(e => {
+  return ENTITIES.flatMap(e => {
+    let out = [];
 
-    // ---- MY SST ----
-    if (e.jurisdiction === "MY" && e.taxes.SST) {
-      const d = `${y}-${String(m).padStart(2,"0")}-28`;
-
+    if (e.jurisdiction==="MY" && e.taxes.includes("SST")) {
+      const d = `${y}-${m}-28`;
       out.push({
         entity_id: e.id,
         jurisdiction: e.jurisdiction,
-        tax_type: "SST",
         description: "SST filing",
         deadline: d,
         adjusted_deadline: adjust(d),
@@ -78,37 +44,27 @@ function genDeadlines(now = new Date()) {
       });
     }
 
-    // ---- JP CIT ----
-    if (e.jurisdiction === "JP" && e.taxes.CIT) {
-      if (m === 5) {
-        const d = `${y}-05-31`;
-
-        out.push({
-          entity_id: e.id,
-          jurisdiction: e.jurisdiction,
-          tax_type: "CIT",
-          description: "Corporate tax filing",
-          deadline: d,
-          adjusted_deadline: adjust(d),
-          priority: "MEDIUM",
-          owner: e.owner,
-          status: "OPEN"
-        });
-      }
+    if (e.jurisdiction==="JP" && now.getMonth()===4) {
+      const d = `${y}-05-31`;
+      out.push({
+        entity_id: e.id,
+        jurisdiction: e.jurisdiction,
+        description: "Corporate tax filing",
+        deadline: d,
+        adjusted_deadline: adjust(d),
+        priority: "MEDIUM",
+        owner: e.owner,
+        status: "OPEN"
+      });
     }
 
+    return out;
   });
-
-  return out;
 }
 
-/* ─────────────────────────────────────────────
-   SOURCE / TRUST MODEL (TOP 10 EXPANDED)
-───────────────────────────────────────────── */
-
-const TRUST_HIGH = [
-  "gov", "oecd", "iras", "ato", "lhdn"
-];
+/* ─────────────────────────────
+   TRUST
+───────────────────────────── */
 
 const TRUST_MEDIUM = [
   "deloitte","pwc","ey","kpmg",
@@ -116,94 +72,108 @@ const TRUST_MEDIUM = [
   "crowe","bakertilly","mazars","forvis"
 ];
 
-function classifyTrust(source = "") {
-  const s = source.toLowerCase();
-
-  if (TRUST_HIGH.some(x => s.includes(x))) return "HIGH";
+function classifyTrust(src="") {
+  const s = src.toLowerCase();
+  if (/gov|oecd|iras|lhdn|ato/.test(s)) return "HIGH";
   if (TRUST_MEDIUM.some(x => s.includes(x))) return "MEDIUM";
   return "LOW";
 }
 
-/* ─────────────────────────────────────────────
-   INTEL ENGINE
-───────────────────────────────────────────── */
+/* ─────────────────────────────
+   SCORING (PARAM-DRIVEN)
+───────────────────────────── */
 
-function scoreImpact(text, trust) {
-  let score = 0;
+function score(text, trust, weights) {
+  let s = 0;
 
-  if (trust === "HIGH") score += 3;
-  if (/pillar|qdmt|penalty|enforcement|mandatory/.test(text)) score += 3;
-  if (/gst|vat|cit|wht|sst/.test(text)) score += 2;
+  if (trust==="HIGH") s += weights.trust_high;
+  if (/enforcement|penalty|mandatory|pillar/i.test(text))
+    s += weights.legal;
+  if (/gst|vat|sst|cit|wht/i.test(text))
+    s += weights.tax;
 
-  return score >= 6 ? "HIGH" :
-         score >= 3 ? "MEDIUM" :
-         "LOW";
+  if (s >= weights.high_cutoff) return "HIGH";
+  if (s >= weights.med_cutoff) return "MEDIUM";
+  return "LOW";
 }
 
-function mapEntities(item) {
-  return ENTITIES
-    .filter(e => e.jurisdiction === item.jurisdiction)
-    .map(e => e.id);
+/* ─────────────────────────────
+   ENTITY MAPPING
+───────────────────────────── */
+
+function mapEntities(j) {
+  return ENTITIES.filter(e => e.jurisdiction===j).map(e=>e.id);
 }
 
-function actions(item) {
-  if (/pillar/i.test(item.text)) {
-    return ["Model ETR impact", "Check safe harbour"];
-  }
-  if (/sst|vat|gst/i.test(item.text)) {
-    return ["Review indirect tax exposure"];
-  }
-  return ["Review relevance"];
+function actions(text) {
+  if (/pillar/i.test(text)) return ["Model ETR","Check exposure"];
+  if (/gst|sst|vat/i.test(text)) return ["Review indirect tax"];
+  return ["Review"];
 }
 
-/* ─────────────────────────────────────────────
-   DATA FETCH (SIMPLIFIED — REPLACE LATER)
-───────────────────────────────────────────── */
+/* ─────────────────────────────
+   NEWS INGESTION (RESTORED)
+───────────────────────────── */
 
-async function fetchNews() {
-  // placeholder – replace with RSS later
-  const raw = [
-    {
-      jurisdiction: "MY",
-      title: "Malaysia SST enforcement update",
-      text: "New SST enforcement rules and penalty regime introduced",
-      source: "BDO"
-    }
-  ];
+async function fetchNews(weights, filterJ) {
+  const url = "https://news.google.com/rss/search?q=tax+regulation";
+  const xml = await fetch(url).then(r=>r.text());
+  const data = parser.parse(xml);
 
-  return raw.map(n => {
-    const trust = classifyTrust(n.source);
-    const priority = scoreImpact(n.text, trust);
+  const items = data?.rss?.channel?.item || [];
+
+  return items.slice(0,25).map(i => {
+
+    const text = (i.title||"")+" "+(i.description||"");
+    const trust = classifyTrust(i.source || "");
+    const priority = score(text, trust, weights);
+
+    const j = detectJurisdiction(text);
 
     return {
-      ...n,
-      trust,
+      jurisdiction: j,
+      title: i.title,
       priority,
-      linked_entities: mapEntities(n),
-      recommended_actions: actions(n)
+      trust,
+      linked_entities: mapEntities(j),
+      recommended_actions: actions(text)
     };
-  });
+
+  }).filter(n => !filterJ || n.jurisdiction===filterJ);
 }
 
-/* ─────────────────────────────────────────────
+/* simple heuristic */
+function detectJurisdiction(text="") {
+  const t = text.toLowerCase();
+  if (t.includes("malaysia")) return "MY";
+  if (t.includes("japan")) return "JP";
+  if (t.includes("singapore")) return "SG";
+  return "GLOBAL";
+}
+
+/* ─────────────────────────────
    HANDLER
-───────────────────────────────────────────── */
+───────────────────────────── */
 
-module.exports = async function handler(req, res) {
+module.exports = async function handler(req,res){
 
-  const now = new Date();
+  const weights = {
+    trust_high: Number(req.query.th||3),
+    legal: Number(req.query.legal||3),
+    tax: Number(req.query.tax||2),
+    high_cutoff: Number(req.query.hc||6),
+    med_cutoff: Number(req.query.mc||3)
+  };
 
-  const deadlines = genDeadlines(now);
-  const news = await fetchNews();
+  const filterJ = req.query.j || null;
 
-  res.setHeader("Content-Type", "application/json");
+  const deadlines = genDeadlines();
+  const news = await fetchNews(weights, filterJ);
 
-  res.status(200).json({
-    deadlines,
-    news,
-    meta: {
-      fetched_at: now.toISOString(),
-      entity_count: ENTITIES.length
-    }
+  res.json({
+    deadlines: filterJ
+      ? deadlines.filter(d=>d.jurisdiction===filterJ)
+      : deadlines,
+    news
   });
 };
