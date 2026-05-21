@@ -3,42 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tax Intel</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Tax Control</title>
+
+  <style>
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: system-ui, sans-serif;
+      margin: 0;
+    }
+
+    header {
+      background: #161b22;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #30363d;
+    }
+
+    h1 {
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    #controls {
+      padding: 12px 16px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+
+    select, input {
+      background: #161b22;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+      padding: 4px 6px;
+    }
+
+    section {
+      padding: 16px;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .card {
+      background: #161b22;
+      border-left: 3px solid #30363d;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    .high { border-left-color: #f85149; }
+    .medium { border-left-color: #d29922; }
+
+    .meta {
+      font-size: 11px;
+      color: #8b949e;
+      margin-top: 4px;
+    }
+  </style>
 </head>
 
 <body>
-  <header id="header">
-    <div id="header-left">
-      <span id="status-dot" class="status-dot"></span>
-      <h1>TAX CONTROL</h1>
-      <span id="last-updated"></span>
-    </div>
 
-    <div id="header-right">
-      <input id="search" placeholder="Search…" />
-    </div>
-  </header>
+<header>
+  <h1>TAX CONTROL</h1>
+  <input id="search" placeholder="Search…" />
+</header>
 
-  <main id="content">
+<!-- CONTROLS -->
+<div id="controls"></div>
 
-    <section>
-      <h2>Today — Required Actions</h2>
-      <div id="today"></div>
-    </section>
+<!-- TODAY ACTIONS -->
+<section>
+  <h2>Today</h2>
+  <div id="today"></div>
+</section>
 
-    <section>
-      <h2>All Deadlines</h2>
-      <div id="deadlines"></div>
-    </section>
+<!-- DEADLINES -->
+<section>
+  <h2>Deadlines</h2>
+  <div id="deadlines"></div>
+</section>
 
-    <section>
-      <h2>High Impact Intel</h2>
-      <div id="intel"></div>
-    </section>
+<!-- INTEL -->
+<section>
+  <h2>Intel</h2>
+  <div id="intel"></div>
+</section>
 
-  </main>
+<script src="script.js"></script>
 
-  <script src="script.js"></script>
 </body>
 </html>
