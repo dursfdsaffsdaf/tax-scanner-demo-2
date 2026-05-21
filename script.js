@@ -2,73 +2,81 @@
 
 const API = "/api/tax-intel";
 
-let state = { deadlines: [], news: [] };
+let state = {};
+let params = {
+  th: 3,
+  legal: 3,
+  tax: 2,
+  hc: 6,
+  mc: 3,
+  j: ""
+};
 
-async function init() {
-  const res = await fetch(API);
-  const data = await res.json();
-  state = data;
+/* ───────────────────── */
 
+async function load(){
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(API+"?"+query);
+  state = await res.json();
   render();
 }
 
-// ---------- CORE FILTERS ----------
+/* ─────────────────────
+   CONTROLS
+───────────────────── */
 
-function isDueToday(d) {
-  const today = new Date().toISOString().slice(0, 10);
-  return d.adjusted_deadline <= today && d.status !== "DONE";
-}
+function controls(){
+  return `
+    <div>
+      Country:
+      <select onchange="setJ(this.value)">
+        <option value="">ALL</option>
+        <option value="MY">MY</option>
+        <option value="JP">JP</option>
+      </select>
 
-function isHighImpact(n) {
-  return n.priority === "HIGH";
-}
+      High Cutoff:
+      <input type="number" value="${params.hc}"
+        onchange="setParam('hc',this.value)" />
 
-// ---------- RENDER ----------
-
-function renderToday() {
-  return state.deadlines
-    .filter(isDueToday)
-    .map(d => `
-      <div class="card high">
-        <div><b>${d.entity_id}</b> — ${d.description}</div>
-        <div class="meta">
-          Due: ${d.adjusted_deadline} | Owner: ${d.owner}
-        </div>
-      </div>
-    `).join("");
-}
-
-function renderDeadlines() {
-  return state.deadlines.map(d => `
-    <div class="card ${d.priority.toLowerCase()}">
-      <div><b>${d.entity_id}</b> — ${d.description}</div>
-      <div class="meta">
-        Stat: ${d.deadline} | Adj: ${d.adjusted_deadline}
-      </div>
+      Legal Weight:
+      <input type="number" value="${params.legal}"
+        onchange="setParam('legal',this.value)" />
     </div>
-  `).join("");
+  `;
 }
 
-function renderIntel() {
-  return state.news
-    .filter(isHighImpact)
-    .map(n => `
-      <div class="card high">
-        <div><b>${n.title}</b></div>
-        <div class="meta">
-          Entities: ${n.linked_entities.join(",")}
-        </div>
-        <div>${n.recommended_actions.join("; ")}</div>
+function setParam(k,v){
+  params[k]=v;
+  load();
+}
+
+function setJ(v){
+  params.j=v;
+  load();
+}
+
+/* ───────────────────── */
+
+function render(){
+  document.getElementById("controls").innerHTML = controls();
+
+  document.getElementById("deadlines").innerHTML =
+    state.deadlines.map(d=>`
+      <div>
+        ${d.entity_id} — ${d.description}
+      </div>
+    `).join("");
+
+  document.getElementById("intel").innerHTML =
+    state.news.map(n=>`
+      <div>
+        <b>${n.title}</b> (${n.priority})
+        <div>${n.linked_entities.join(",")}</div>
       </div>
     `).join("");
 }
 
-function render() {
-  document.getElementById("today").innerHTML = renderToday();
-  document.getElementById("deadlines").innerHTML = renderDeadlines();
-  document.getElementById("intel").innerHTML = renderIntel();
-}
-
-// ---------- INIT ----------
-document.addEventListener("DOMContentLoaded", init);
+/* ───────────────────── */
+document.addEventListener("DOMContentLoaded", load);
 ``
